@@ -2,6 +2,7 @@ package main
 
 import (
 	"blog/configs"
+	"blog/internal/platform/application"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,5 +23,6 @@ func init() {
 	log.SetLevel(logLevel)
 }
 func main() {
-
+	app := application.NewApp(config)
+	app.RunRouter()
 }
