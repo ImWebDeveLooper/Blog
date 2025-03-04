@@ -5,6 +5,7 @@ import (
 	"blog/internal/domain/posts"
 	"blog/internal/domain/users"
 	"blog/internal/interactors"
+	"blog/internal/platform/pkg/jwt"
 	"blog/internal/platform/pkg/password"
 	"blog/internal/platform/repositories"
 	"context"
@@ -33,6 +34,7 @@ type App struct {
 	}
 	Router         *gin.Engine
 	PasswordHasher users.PasswordHasher
+	AuthService    jwt.Service
 }
 
 func NewApp(cfg *configs.Config) *App {
@@ -45,6 +47,9 @@ func NewApp(cfg *configs.Config) *App {
 	app.registerRepositories()
 	app.registerPasswordHasher()
 	if err := app.registerInteractors(); err != nil {
+		log.Fatal(err)
+	}
+	if err := app.registerAuthService(); err != nil {
 		log.Fatal(err)
 	}
 	if err := app.registerRouter(); err != nil {
@@ -100,6 +105,22 @@ func (a *App) registerRepositories() {
 
 func (a *App) registerPasswordHasher() {
 	a.PasswordHasher = password.NewPasswordHasher()
+}
+
+func (a *App) registerAuthService() error {
+	if len(a.Config.Auth.JWT.SecretKey) < 1 ||
+		a.Config.Auth.JWT.ExpiredTime < 1 ||
+		len(a.Config.Auth.JWT.Issuer) < 1 ||
+		a.Config.Auth.JWT.ExpiredTime < 1 {
+		return errors.New("the configuration values of the auth service are not done")
+	}
+	exp := time.Hour * time.Duration(a.Config.Auth.JWT.ExpiredTime)
+	a.AuthService = jwt.NewJWTService(
+		a.Config.Auth.JWT.SecretKey,
+		a.Config.Auth.JWT.Issuer,
+		exp,
+	)
+	return nil
 }
 
 func (a *App) registerRouter() error {
