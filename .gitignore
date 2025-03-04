@@ -1,0 +1,10 @@
+.idea
+configs/*
+!configs/config.go
+!configs/rbac_model.conf
+!configs/config.yaml.example
+play.go
+.DS_Store
+/logs/logfile.log
+/bin
+.env
