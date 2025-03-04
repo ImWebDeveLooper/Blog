@@ -34,6 +34,18 @@ func (m *MongoPostRepository) Save(ctx context.Context, p posts.Post) error {
 	return err
 }
 
+//func (m *MongoPostRepository) Update(ctx context.Context, p posts.Post) error {
+//	filter := bson.M{"author": p.Author}
+//	updateResult, err := m.db.Collection("posts").ReplaceOne(ctx, filter, m.serialize(p))
+//	if err != nil {
+//		return err
+//	}
+//	if updateResult.MatchedCount == 0 {
+//		return errors.New("no document found with the specified title")
+//	}
+//	return nil
+//}
+
 func (m *MongoPostRepository) serialize(p posts.Post) *PostDocument {
 	return &PostDocument{
 		ID:      p.ID,

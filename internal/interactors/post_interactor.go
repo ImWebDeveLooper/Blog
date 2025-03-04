@@ -29,3 +29,16 @@ func (i *PostInteractor) Save(ctx context.Context, req dtos.CreatePostRequest) e
 	}
 	return nil
 }
+
+//func (i *PostInteractor) Update(ctx context.Context, req dtos.UpdatePostRequest) error {
+//	postInfo := posts.Post{
+//		Title:   req.Title,
+//		Content: req.Content,
+//		Author:  req.Author,
+//	}
+//	err := i.postRepository.Update(ctx, postInfo)
+//	if err != nil {
+//		return err
+//	}
+//	return nil
+//}

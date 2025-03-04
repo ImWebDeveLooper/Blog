@@ -3,7 +3,9 @@ package application
 import (
 	"blog/configs"
 	"blog/internal/domain/posts"
+	"blog/internal/domain/users"
 	"blog/internal/interactors"
+	"blog/internal/platform/pkg/password"
 	"blog/internal/platform/repositories"
 	"context"
 	"errors"
@@ -22,12 +24,15 @@ type App struct {
 		Mongo *mongo.Database
 	}
 	Repositories struct {
+		UsersRepository users.Repository
 		PostsRepository posts.Repository
 	}
 	Interactors struct {
+		UserInteractor users.Interactor
 		PostInteractor posts.Interactor
 	}
-	Router *gin.Engine
+	Router         *gin.Engine
+	PasswordHasher users.PasswordHasher
 }
 
 func NewApp(cfg *configs.Config) *App {
@@ -38,6 +43,7 @@ func NewApp(cfg *configs.Config) *App {
 		log.Fatal("Connection Failed!")
 	}
 	app.registerRepositories()
+	app.registerPasswordHasher()
 	if err := app.registerInteractors(); err != nil {
 		log.Fatal(err)
 	}
@@ -82,12 +88,18 @@ func (a *App) registerMongoDB() error {
 }
 
 func (a *App) registerInteractors() error {
+	a.Interactors.UserInteractor = interactors.NewUserInteractor(a.Repositories.UsersRepository, a.PasswordHasher)
 	a.Interactors.PostInteractor = interactors.NewPostInteractor(a.Repositories.PostsRepository)
 	return nil
 }
 
 func (a *App) registerRepositories() {
+	a.Repositories.UsersRepository = repositories.NewMongoUserRepository(a.DB.Mongo)
 	a.Repositories.PostsRepository = repositories.NewMongoPostRepository(a.DB.Mongo)
+}
+
+func (a *App) registerPasswordHasher() {
+	a.PasswordHasher = password.NewPasswordHasher()
 }
 
 func (a *App) registerRouter() error {
