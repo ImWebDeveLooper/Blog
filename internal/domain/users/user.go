@@ -1,5 +1,11 @@
 package users
 
+import "errors"
+
+var (
+	ErrUserNotValid = errors.New("user is not valid")
+)
+
 type User struct {
 	ID        string
 	FirstName string

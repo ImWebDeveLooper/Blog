@@ -38,6 +38,27 @@ func (m *MongoUserRepository) Save(ctx context.Context, u users.User) error {
 	return err
 }
 
+func (m *MongoUserRepository) FindByEmailOrUsername(ctx context.Context, identifier string) (*users.User, error) {
+	timeoutCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), time.Minute)
+	defer cancel()
+	filter := bson.M{
+		"$or": []bson.M{
+			{"email": identifier},
+			{"username": identifier},
+		},
+	}
+	result := m.db.Collection("users").FindOne(timeoutCtx, filter)
+	if result.Err() != nil {
+		return nil, result.Err()
+	}
+	var doc UserDocument
+	err := result.Decode(&doc)
+	if err != nil {
+		return nil, err
+	}
+	return m.deserialize(doc), nil
+}
+
 func (m *MongoUserRepository) serialize(u users.User) *UserDocument {
 	return &UserDocument{
 		ID:        u.ID,

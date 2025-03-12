@@ -46,10 +46,10 @@ func NewApp(cfg *configs.Config) *App {
 	}
 	app.registerRepositories()
 	app.registerPasswordHasher()
-	if err := app.registerInteractors(); err != nil {
+	if err := app.registerAuthService(); err != nil {
 		log.Fatal(err)
 	}
-	if err := app.registerAuthService(); err != nil {
+	if err := app.registerInteractors(); err != nil {
 		log.Fatal(err)
 	}
 	if err := app.registerRouter(); err != nil {
@@ -93,7 +93,7 @@ func (a *App) registerMongoDB() error {
 }
 
 func (a *App) registerInteractors() error {
-	a.Interactors.UserInteractor = interactors.NewUserInteractor(a.Repositories.UsersRepository, a.PasswordHasher)
+	a.Interactors.UserInteractor = interactors.NewUserInteractor(a.Repositories.UsersRepository, a.PasswordHasher, a.AuthService)
 	a.Interactors.PostInteractor = interactors.NewPostInteractor(a.Repositories.PostsRepository)
 	return nil
 }
