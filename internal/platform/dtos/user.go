@@ -7,3 +7,8 @@ type CreateUserRequest struct {
 	Email     string `json:"email"`
 	Password  string `json:"password"`
 }
+
+type LoginRequest struct {
+	Identifier string `json:"identifier"`
+	Password   string `json:"password"`
+}

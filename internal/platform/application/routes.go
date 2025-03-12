@@ -10,6 +10,7 @@ func (a *App) RegisterRoutes() {
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/signup", actions.PostSignUpAction(a.Interactors.UserInteractor))
+			auth.POST("/login", actions.PostLoginAction(a.Interactors.UserInteractor))
 		}
 
 		post := v1.Group("/post")
