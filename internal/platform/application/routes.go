@@ -9,14 +9,14 @@ func (a *App) RegisterRoutes() {
 	{
 		auth := v1.Group("/auth")
 		{
-			auth.POST("/signup", actions.PostSignUpAction(a.Interactors.UserInteractor))
-			auth.POST("/login", actions.PostLoginAction(a.Interactors.UserInteractor))
+			auth.POST("/signup", actions.PostSignUpAction(a.Interactors.UserInteractor, *a.Validator))
+			auth.POST("/login", actions.PostLoginAction(a.Interactors.UserInteractor, *a.Validator))
 		}
 
-		post := v1.Group("/post")
+		post := v1.Group("/posts")
 		{
-			post.POST("/posts/create", actions.PostCreatePostsAction(a.Interactors.PostInteractor))
-			post.PATCH("/posts/:author")
+			post.POST("/create", actions.PostCreatePostsAction(a.Interactors.PostInteractor, *a.Validator))
+			post.PATCH("/:author")
 		}
 	}
 }

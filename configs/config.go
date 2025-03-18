@@ -7,10 +7,13 @@ import (
 
 type Config struct {
 	App struct {
-		Name     string `yaml:"name" env:"NAME" envDefault:"Blog"`
-		Version  string `yaml:"version" env:"VERSION" envDefault:"Latest"`
-		LogLevel string `yaml:"log_level" env:"LOG_LEVEL" envDefault:"debug"`
-		Env      string `yaml:"env" env:"ENV" envDefault:"development"`
+		Name             string `yaml:"name" env:"NAME" envDefault:"Blog"`
+		Version          string `yaml:"version" env:"VERSION" envDefault:"Latest"`
+		LogLevel         string `yaml:"log_level" env:"LOG_LEVEL" envDefault:"debug"`
+		Env              string `yaml:"env" env:"ENV" envDefault:"development"`
+		Locale           string `yaml:"locale" env:"LOCALE" envDefault:"en"`
+		FallbackLocale   string `yaml:"fallback_locale" env:"FALLBACK_LOCALE" envDefault:"en"`
+		TranslationsPath string `yaml:"translations_path" env:"TRANSLATIONS_PATH" env-default:"assets/locales"`
 	} `yaml:"app" env-prefix:"APP_"`
 	Router struct {
 		Address string `yaml:"address" env:"ADDRESS"`

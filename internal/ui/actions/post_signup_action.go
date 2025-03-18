@@ -1,28 +1,44 @@
 package actions
 
 import (
+	"blog/assets/locales"
 	"blog/internal/domain/users"
 	"blog/internal/platform/dtos"
+	"blog/internal/platform/pkg/lang"
+	"blog/internal/platform/pkg/validators"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
-func PostSignUpAction(interactor users.Interactor) gin.HandlerFunc {
+func PostSignUpAction(interactor users.Interactor, validator validators.Validator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		locale := ctx.GetString("locale")
 		var req dtos.CreateUserRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			ctx.JSON(400, gin.H{"error": "Invalid input"})
+			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
+				"error": lang.TryBy(ctx.GetString("locale"), locales.InvalidSchemaError),
+			})
+			return
+		}
+		result := validator.Validate(req, locale)
+		if result.Fails {
+			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
+				"message": lang.TryBy(ctx.GetString("locale"), locales.ValidationError),
+				"errors":  result.Messages.All(),
+			})
 			return
 		}
 		err := interactor.SignUp(ctx, req)
 		if err != nil {
 			log.WithError(err).Error("error while saving user")
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"error": lang.TryBy(ctx.GetString("locale"), locales.InternalServerError),
+			})
 			return
 		}
-		ctx.JSON(200, gin.H{
-			"message": "The User Registered",
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": lang.TryBy(ctx.GetString("locale"), locales.UserRegistered),
 		})
 	}
 }
