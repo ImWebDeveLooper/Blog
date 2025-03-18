@@ -55,6 +55,9 @@ func NewApp(cfg *configs.Config) (*App, error) {
 	if err := app.registerAuthService(); err != nil {
 		return nil, err
 	}
+	if err := app.registerCasbinAdapter(); err != nil {
+		return nil, err
+	}
 	if err := app.registerInteractors(); err != nil {
 		return nil, err
 	}
@@ -113,7 +116,7 @@ func (a *App) registerCasbinAdapter() error {
 	if err != nil {
 		return err
 	}
-	enforcer, err := casbin.NewEnforcer("./config/rbac_model.conf", adapter)
+	enforcer, err := casbin.NewEnforcer("./configs/rbac_model.conf", adapter)
 	if err != nil {
 		return err
 	}
@@ -122,7 +125,7 @@ func (a *App) registerCasbinAdapter() error {
 }
 
 func (a *App) registerInteractors() error {
-	a.Interactors.UserInteractor = interactors.NewUserInteractor(a.Repositories.UsersRepository, a.PasswordHasher, a.AuthService)
+	a.Interactors.UserInteractor = interactors.NewUserInteractor(a.Repositories.UsersRepository, a.PasswordHasher, a.AuthService, a.Enforcer)
 	a.Interactors.PostInteractor = interactors.NewPostInteractor(a.Repositories.PostsRepository)
 	return nil
 }

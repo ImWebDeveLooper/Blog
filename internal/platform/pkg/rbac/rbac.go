@@ -8,6 +8,7 @@ const (
 	RoleEditor    Role = "Editor"
 	RoleAuthor    Role = "Author"
 	RoleModerator Role = "Moderator"
+	RoleMember    Role = "Member"
 	RoleGuest     Role = "Guest"
 )
 

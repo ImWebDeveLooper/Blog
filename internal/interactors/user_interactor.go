@@ -4,7 +4,9 @@ import (
 	"blog/internal/domain/users"
 	"blog/internal/platform/dtos"
 	"blog/internal/platform/pkg/jwt"
+	"blog/internal/platform/pkg/rbac"
 	"context"
+	"github.com/casbin/casbin/v2"
 	"github.com/google/uuid"
 )
 
@@ -12,13 +14,15 @@ type UserInteractor struct {
 	userRepository users.Repository
 	passwordHasher users.PasswordHasher
 	jwtService     jwt.Service
+	enforcer       *casbin.Enforcer
 }
 
-func NewUserInteractor(r users.Repository, p users.PasswordHasher, jwt jwt.Service) users.Interactor {
+func NewUserInteractor(r users.Repository, p users.PasswordHasher, jwt jwt.Service, enforcer *casbin.Enforcer) users.Interactor {
 	return &UserInteractor{
 		userRepository: r,
 		passwordHasher: p,
 		jwtService:     jwt,
+		enforcer:       enforcer,
 	}
 }
 
@@ -39,6 +43,16 @@ func (i *UserInteractor) SignUp(ctx context.Context, req dtos.CreateUserRequest)
 	if err != nil {
 		return err
 	}
+
+	_, err = i.enforcer.AddRoleForUser(userInfo.ID, rbac.RoleMember.String())
+	if err != nil {
+		return err
+	}
+	err = i.enforcer.SavePolicy()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -57,7 +71,12 @@ func (i *UserInteractor) Login(ctx context.Context, identifier, password string)
 		return "", users.ErrUserNotValid
 	}
 
-	token, err := i.jwtService.GenerateToken(user.Email, user.ID)
+	role, err := i.enforcer.GetRolesForUser(user.ID)
+	if err != nil {
+		return "", err
+	}
+
+	token, err := i.jwtService.GenerateToken(user.Email, user.ID, role)
 	if err != nil {
 		return "", err
 	}
