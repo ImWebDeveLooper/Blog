@@ -28,6 +28,11 @@ type Config struct {
 			AuthSource string `yaml:"auth_source" env:"AUTH_SOURCE"`
 		} `yaml:"mongo" env-prefix:"MONGO_"`
 	} `yaml:"db" env-prefix:"DB_"`
+	Casbin struct {
+		DB struct {
+			CollectionName string `yaml:"collection_name" env:"COLLECTION_NAME"`
+		} `yaml:"db" env-prefix:"DB_"`
+	} `yaml:"casbin" env-prefix:"CASBIN_"`
 	Auth struct {
 		JWT struct {
 			SecretKey   string `yaml:"secret_key" env:"SECRET_KEY"`

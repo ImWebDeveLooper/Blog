@@ -13,6 +13,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/casbin/casbin/v2"
+	mongodbadapter "github.com/casbin/mongodb-adapter/v3"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -38,6 +40,7 @@ type App struct {
 	PasswordHasher users.PasswordHasher
 	AuthService    jwt.Service
 	Validator      *validators.Validator
+	Enforcer       *casbin.Enforcer
 }
 
 func NewApp(cfg *configs.Config) (*App, error) {
@@ -94,6 +97,28 @@ func (a *App) registerMongoDB() error {
 	}
 	log.Println("Database Connected Successfully.")
 	return err
+}
+
+func (a *App) registerCasbinAdapter() error {
+	if a.Config.Casbin.DB.CollectionName == "" {
+		return errors.New("casbin collection name is required")
+	}
+	config := &mongodbadapter.AdapterConfig{
+		DatabaseName:   a.Config.DB.Mongo.Database,
+		CollectionName: a.Config.Casbin.DB.CollectionName,
+		Timeout:        30 * time.Second,
+		IsFiltered:     false,
+	}
+	adapter, err := mongodbadapter.NewAdapterByDB(a.DB.Mongo.Client(), config)
+	if err != nil {
+		return err
+	}
+	enforcer, err := casbin.NewEnforcer("./config/rbac_model.conf", adapter)
+	if err != nil {
+		return err
+	}
+	a.Enforcer = enforcer
+	return nil
 }
 
 func (a *App) registerInteractors() error {
