@@ -1,0 +1,9 @@
+{
+  "invalid_schema": "Data schema is invalid.",
+  "validation_error": "Validation error occurred.",
+  "internal_server_error": "Internal server error occurred.",
+  "invalid_credential": "Provided credentials are incorrect.",
+  "logged_in": "You're logged in!",
+  "user_registered": "The user registered.",
+  "post_created": "Post has been created successfully"
+}

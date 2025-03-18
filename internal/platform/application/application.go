@@ -6,7 +6,9 @@ import (
 	"blog/internal/domain/users"
 	"blog/internal/interactors"
 	"blog/internal/platform/pkg/jwt"
+	"blog/internal/platform/pkg/lang"
 	"blog/internal/platform/pkg/password"
+	"blog/internal/platform/pkg/validators"
 	"blog/internal/platform/repositories"
 	"context"
 	"errors"
@@ -35,28 +37,30 @@ type App struct {
 	Router         *gin.Engine
 	PasswordHasher users.PasswordHasher
 	AuthService    jwt.Service
+	Validator      *validators.Validator
 }
 
-func NewApp(cfg *configs.Config) *App {
+func NewApp(cfg *configs.Config) (*App, error) {
 	app := &App{
 		Config: cfg,
 	}
 	if err := app.registerMongoDB(); err != nil {
-		log.Fatal("Connection Failed!")
+		return nil, err
 	}
 	app.registerRepositories()
 	app.registerPasswordHasher()
 	if err := app.registerAuthService(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	if err := app.registerInteractors(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	if err := app.registerRouter(); err != nil {
-		log.Fatal(err)
+	if err := app.registerValidator(); err != nil {
+		return nil, err
 	}
+	app.registerRouter()
 	app.RegisterRoutes()
-	return app
+	return app, nil
 }
 
 func (a *App) registerMongoDB() error {
@@ -103,6 +107,11 @@ func (a *App) registerRepositories() {
 	a.Repositories.PostsRepository = repositories.NewMongoPostRepository(a.DB.Mongo)
 }
 
+func (a *App) registerValidator() error {
+	a.Validator = validators.NewCustomValidator(a.Repositories.UsersRepository)
+	return a.Validator.RegisterValidation()
+}
+
 func (a *App) registerPasswordHasher() {
 	a.PasswordHasher = password.NewPasswordHasher()
 }
@@ -123,10 +132,11 @@ func (a *App) registerAuthService() error {
 	return nil
 }
 
-func (a *App) registerRouter() error {
+func (a *App) registerRouter() {
 	gin.SetMode(gin.ReleaseMode)
-	a.Router = gin.Default()
-	return nil
+	router := gin.New()
+	router.Use(gin.Recovery(), lang.GinLocaleDetectorMiddleware())
+	a.Router = router
 }
 
 func (a *App) RunRouter() {

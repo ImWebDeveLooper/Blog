@@ -1,4 +1,5 @@
 .idea
+.cursor
 configs/*
 !configs/config.go
 !configs/rbac_model.conf
