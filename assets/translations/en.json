@@ -5,5 +5,8 @@
   "invalid_credential": "Provided credentials are incorrect.",
   "logged_in": "You're logged in!",
   "user_registered": "The user registered.",
-  "post_created": "Post has been created successfully"
+  "post_created": "Post has been created successfully",
+  "not_logged_in": "User hasn't Logged In yet.",
+  "forbidden_error": "You are not allowed to access this resource.",
+  "unauthorized_user_error": "You are not authorized."
 }

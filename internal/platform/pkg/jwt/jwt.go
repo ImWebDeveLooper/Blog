@@ -12,13 +12,14 @@ var (
 )
 
 type Service interface {
-	GenerateToken(email, userID string) (string, error)
+	GenerateToken(email, userID string, role []string) (string, error)
 	ValidateToken(token string) (*jwt.Token, error)
 }
 
 type CustomClaims struct {
 	Email  string
 	UserID string
+	Role   []string
 	jwt.StandardClaims
 }
 
@@ -36,10 +37,11 @@ func NewJWTService(secretKey, issuer string, expiredTime time.Duration) Service 
 	}
 }
 
-func (j jwtServices) GenerateToken(email, userID string) (string, error) {
+func (j jwtServices) GenerateToken(email, userID string, role []string) (string, error) {
 	claims := &CustomClaims{
 		Email:  email,
 		UserID: userID,
+		Role:   role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(j.expiredTime).Unix(),
 			Issuer:    j.issuer,

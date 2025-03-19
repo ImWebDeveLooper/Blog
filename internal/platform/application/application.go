@@ -10,9 +10,12 @@ import (
 	"blog/internal/platform/pkg/password"
 	"blog/internal/platform/pkg/validators"
 	"blog/internal/platform/repositories"
+	"blog/internal/platform/seeder"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/casbin/casbin/v2"
+	mongodbadapter "github.com/casbin/mongodb-adapter/v3"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -38,6 +41,8 @@ type App struct {
 	PasswordHasher users.PasswordHasher
 	AuthService    jwt.Service
 	Validator      *validators.Validator
+	Enforcer       *casbin.Enforcer
+	Seeder         *seeder.Seeder
 }
 
 func NewApp(cfg *configs.Config) (*App, error) {
@@ -52,12 +57,16 @@ func NewApp(cfg *configs.Config) (*App, error) {
 	if err := app.registerAuthService(); err != nil {
 		return nil, err
 	}
+	if err := app.registerCasbinAdapter(); err != nil {
+		return nil, err
+	}
 	if err := app.registerInteractors(); err != nil {
 		return nil, err
 	}
 	if err := app.registerValidator(); err != nil {
 		return nil, err
 	}
+	app.registerSeeder()
 	app.registerRouter()
 	app.RegisterRoutes()
 	return app, nil
@@ -96,8 +105,30 @@ func (a *App) registerMongoDB() error {
 	return err
 }
 
+func (a *App) registerCasbinAdapter() error {
+	if a.Config.Casbin.DB.CollectionName == "" {
+		return errors.New("casbin collection name is required")
+	}
+	config := &mongodbadapter.AdapterConfig{
+		DatabaseName:   a.Config.DB.Mongo.Database,
+		CollectionName: a.Config.Casbin.DB.CollectionName,
+		Timeout:        30 * time.Second,
+		IsFiltered:     false,
+	}
+	adapter, err := mongodbadapter.NewAdapterByDB(a.DB.Mongo.Client(), config)
+	if err != nil {
+		return err
+	}
+	enforcer, err := casbin.NewEnforcer("./configs/rbac_model.conf", adapter)
+	if err != nil {
+		return err
+	}
+	a.Enforcer = enforcer
+	return nil
+}
+
 func (a *App) registerInteractors() error {
-	a.Interactors.UserInteractor = interactors.NewUserInteractor(a.Repositories.UsersRepository, a.PasswordHasher, a.AuthService)
+	a.Interactors.UserInteractor = interactors.NewUserInteractor(a.Repositories.UsersRepository, a.PasswordHasher, a.AuthService, a.Enforcer)
 	a.Interactors.PostInteractor = interactors.NewPostInteractor(a.Repositories.PostsRepository)
 	return nil
 }
@@ -132,6 +163,10 @@ func (a *App) registerAuthService() error {
 	return nil
 }
 
+func (a *App) registerSeeder() {
+	a.Seeder = seeder.NewSeeder(a.DB.Mongo, a.Enforcer)
+}
+
 func (a *App) registerRouter() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
@@ -148,4 +183,9 @@ func (a *App) RunRouter() {
 		log.Fatal(err)
 	}
 	log.Printf("Server Started On Port %s", a.Config.Router.Address)
+}
+
+func (a *App) Close() error {
+	log.Debug("System Successfully Closed.")
+	return nil
 }
