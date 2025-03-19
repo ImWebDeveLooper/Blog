@@ -7,6 +7,6 @@
   "user_registered": "The user registered.",
   "post_created": "Post has been created successfully",
   "not_logged_in": "User hasn't Logged In yet.",
-  "forbidden_error": "You are forbidden to access this resource.",
+  "forbidden_error": "You are not allowed to access this resource.",
   "unauthorized_user_error": "You are not authorized."
 }

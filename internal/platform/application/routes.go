@@ -1,6 +1,7 @@
 package application
 
 import (
+	"blog/internal/platform/pkg/rbac"
 	"blog/internal/ui/actions"
 	"blog/internal/ui/middlewares"
 )
@@ -16,8 +17,12 @@ func (a *App) RegisterRoutes() {
 
 		post := v1.Group("/posts", middlewares.AuthMiddleware(a.AuthService))
 		{
-			post.POST("/create", actions.PostCreatePostsAction(a.Interactors.PostInteractor, *a.Validator))
-			post.PATCH("/:author")
+			post.POST("/create",
+				middlewares.Authorize(rbac.ObjectPost, rbac.ActionWrite, a.Enforcer),
+				actions.PostCreatePostsAction(a.Interactors.PostInteractor, *a.Validator))
+			post.PATCH("/:author",
+				middlewares.Authorize(rbac.ObjectPost, rbac.ActionModify, a.Enforcer),
+			)
 		}
 	}
 }
