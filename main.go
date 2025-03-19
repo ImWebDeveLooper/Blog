@@ -1,11 +1,13 @@
 package main
 
+import "C"
 import (
 	"blog/configs"
-	"blog/internal/platform/application"
 	"blog/internal/platform/pkg/lang"
+	"blog/internal/ui/cli"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"runtime"
 	"time"
 )
@@ -37,10 +39,14 @@ func init() {
 	lang.SetDefaultLocale("en")
 	lang.SetTranslationFilesPath("./assets/translations")
 }
+
+var mainCommand = &cobra.Command{}
+
 func main() {
-	app, err := application.NewApp(config)
+	mainCommand.AddCommand(cli.Run(config))
+	mainCommand.AddCommand(cli.Seeder(config))
+	err := mainCommand.Execute()
 	if err != nil {
-		log.WithError(err).Fatal("failed to create instance from application")
+		log.Fatal(err)
 	}
-	app.RunRouter()
 }

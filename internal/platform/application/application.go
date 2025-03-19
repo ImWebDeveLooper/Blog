@@ -10,6 +10,7 @@ import (
 	"blog/internal/platform/pkg/password"
 	"blog/internal/platform/pkg/validators"
 	"blog/internal/platform/repositories"
+	"blog/internal/platform/seeder"
 	"context"
 	"errors"
 	"fmt"
@@ -41,6 +42,7 @@ type App struct {
 	AuthService    jwt.Service
 	Validator      *validators.Validator
 	Enforcer       *casbin.Enforcer
+	Seeder         *seeder.Seeder
 }
 
 func NewApp(cfg *configs.Config) (*App, error) {
@@ -64,6 +66,7 @@ func NewApp(cfg *configs.Config) (*App, error) {
 	if err := app.registerValidator(); err != nil {
 		return nil, err
 	}
+	app.registerSeeder()
 	app.registerRouter()
 	app.RegisterRoutes()
 	return app, nil
@@ -160,6 +163,10 @@ func (a *App) registerAuthService() error {
 	return nil
 }
 
+func (a *App) registerSeeder() {
+	a.Seeder = seeder.NewSeeder(a.DB.Mongo, a.Enforcer)
+}
+
 func (a *App) registerRouter() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
@@ -176,4 +183,9 @@ func (a *App) RunRouter() {
 		log.Fatal(err)
 	}
 	log.Printf("Server Started On Port %s", a.Config.Router.Address)
+}
+
+func (a *App) Close() error {
+	log.Debug("System Successfully Closed.")
+	return nil
 }
