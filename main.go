@@ -6,10 +6,11 @@ import (
 	"blog/internal/platform/pkg/lang"
 	"blog/internal/ui/cli"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"runtime"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -43,6 +44,7 @@ func init() {
 var mainCommand = &cobra.Command{}
 
 func main() {
+	// test()
 	mainCommand.AddCommand(cli.Run(config))
 	mainCommand.AddCommand(cli.Seeder(config))
 	err := mainCommand.Execute()

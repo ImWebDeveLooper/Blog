@@ -57,6 +57,9 @@ func (v *Validator) RegisterValidation() error {
 	if err := v.validator.RegisterValidation("uniqueUsername", v.validateUniqueUsername); err != nil {
 		return err
 	}
+	if err := v.validator.RegisterValidation("slug", v.validateSlug); err != nil {
+		return err
+	}
 	return nil
 }
 

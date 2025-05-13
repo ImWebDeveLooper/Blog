@@ -11,13 +11,14 @@ import (
 	"net/http"
 )
 
+// PostSignUpAction handles HTTP POST requests for signing up the users and validate the inputs.
 func PostSignUpAction(interactor users.Interactor, validator validators.Validator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		locale := ctx.GetString("locale")
 		var req dtos.CreateUserRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
-				"error": lang.TryBy(ctx.GetString("locale"), locales.InvalidSchemaError),
+				"message": lang.TryBy(ctx.GetString("locale"), locales.InvalidSchemaError),
 			})
 			return
 		}
@@ -33,7 +34,7 @@ func PostSignUpAction(interactor users.Interactor, validator validators.Validato
 		if err != nil {
 			log.WithError(err).Error("error while saving user")
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"error": lang.TryBy(ctx.GetString("locale"), locales.InternalServerError),
+				"message": lang.TryBy(ctx.GetString("locale"), locales.InternalServerError),
 			})
 			return
 		}

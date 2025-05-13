@@ -44,5 +44,6 @@
   "username": "The {field} must be type of username",
   "strongPassword": "The {field} must contains uppercase letters, lowercase letters, numbers & special characters",
   "uniqueEmail": "The {field} is already taken. Please use a different email.",
-  "uniqueUsername": "The {field} is already taken."
+  "uniqueUsername": "The {field} is already taken.",
+  "slug": "The {field} must contains at least two lowercase letters or numbers, and may include hyphens."
 }

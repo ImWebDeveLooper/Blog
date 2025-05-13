@@ -12,6 +12,7 @@ import (
 const (
 	emailRegexStr    = `^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`
 	usernameRegexStr = `^[a-zA-Z0-9._%+\-]+$`
+	slugRegexStr     = `^(?m)([a-z]{2,}-?|[0-9]-?)+$`
 )
 
 // validateEmailOrUsername validates username and email validation for login request
@@ -98,4 +99,10 @@ func (v *Validator) validateUniqueUsername(fl validator.FieldLevel) bool {
 	username := fl.Field().String()
 	user, _ := v.userRepository.FindByEmailOrUsername(context.Background(), username)
 	return user == nil
+}
+
+func (v *Validator) validateSlug(fl validator.FieldLevel) bool {
+	slug := fl.Field().String()
+	slugRegex := regexp.MustCompile(slugRegexStr)
+	return slugRegex.MatchString(slug)
 }
