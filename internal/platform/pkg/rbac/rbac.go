@@ -12,8 +12,8 @@ const (
 	RoleGuest     Role = "Guest"
 )
 
-func (s Role) String() string {
-	return string(s)
+func (r Role) String() string {
+	return string(r)
 }
 
 type Object string

@@ -19,9 +19,11 @@ func (a *App) RegisterRoutes() {
 		{
 			post.POST("/create",
 				middlewares.Authorize(rbac.ObjectPost, rbac.ActionWrite, a.Enforcer),
-				actions.PostCreatePostsAction(a.Interactors.PostInteractor, *a.Validator))
-			post.PATCH("/:author",
+				actions.PostCreatePostsAction(a.Interactors.PostInteractor, *a.Validator),
+			)
+			post.PATCH("/:postID",
 				middlewares.Authorize(rbac.ObjectPost, rbac.ActionModify, a.Enforcer),
+				actions.PatchUpdatePostAction(a.Interactors.PostInteractor, *a.Validator),
 			)
 		}
 	}

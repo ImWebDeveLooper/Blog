@@ -1,5 +1,6 @@
 .idea
 .cursor
+.vscode/*
 configs/*
 !configs/config.go
 !configs/rbac_model.conf

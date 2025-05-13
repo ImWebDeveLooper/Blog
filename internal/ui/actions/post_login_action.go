@@ -11,13 +11,14 @@ import (
 	"net/http"
 )
 
+// PostLoginAction handles HTTP POST requests for login the user and validate the inputs.
 func PostLoginAction(interactor users.Interactor, validator validators.Validator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		locale := ctx.GetString("locale")
 		var req dtos.LoginRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error": lang.TryBy(ctx.GetString("locale"), locales.InvalidSchemaError),
+			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
+				"message": lang.TryBy(ctx.GetString("locale"), locales.InvalidSchemaError),
 			})
 			return
 		}

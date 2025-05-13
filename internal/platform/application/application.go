@@ -129,7 +129,7 @@ func (a *App) registerCasbinAdapter() error {
 
 func (a *App) registerInteractors() error {
 	a.Interactors.UserInteractor = interactors.NewUserInteractor(a.Repositories.UsersRepository, a.PasswordHasher, a.AuthService, a.Enforcer)
-	a.Interactors.PostInteractor = interactors.NewPostInteractor(a.Repositories.PostsRepository)
+	a.Interactors.PostInteractor = interactors.NewPostInteractor(a.Repositories.PostsRepository, a.Enforcer)
 	return nil
 }
 

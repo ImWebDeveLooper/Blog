@@ -3,7 +3,8 @@ package users
 import "errors"
 
 var (
-	ErrUserNotValid = errors.New("user is not valid")
+	ErrUserNotValid   = errors.New("user is not valid")
+	ErrUserNotAllowed = errors.New("user is not allowed")
 )
 
 type User struct {

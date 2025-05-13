@@ -11,13 +11,15 @@ import (
 	"net/http"
 )
 
+// PostCreatePostsAction handles HTTP POST requests to create a post and validate the input
 func PostCreatePostsAction(interactor posts.Interactor, validator validators.Validator) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		locale := ctx.GetString("locale")
+		authorID := ctx.GetString("userID")
 		var req dtos.CreatePostRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error": lang.TryBy(ctx.GetString("locale"), locales.InvalidSchemaError),
+			ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
+				"message": lang.TryBy(ctx.GetString("locale"), locales.InvalidSchemaError),
 			})
 			return
 		}
@@ -29,7 +31,7 @@ func PostCreatePostsAction(interactor posts.Interactor, validator validators.Val
 			})
 			return
 		}
-		err := interactor.Save(ctx, req)
+		err := interactor.CreatePost(ctx, authorID, req)
 		if err != nil {
 			log.WithError(err).Error("error saving post")
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
